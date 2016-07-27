@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+* DrinkToken
+*     Copyright (c) 2016 Katy Brimm
+*     This source file is licensed under the BSD 2-Clause License.
+*     Please see the file LICENSE in this distribution for license terms.
+* Contact: katy.brimm@gmail.com
+-->
+
+<resources>
+    <color name="colorPrimary">#FF9800</color>
+    <color name="colorPrimaryDark">#F57C00</color>
+    <color name="colorAccent">#303F9F</color>
+    <color name="colorAccentLight">#C5CAE9</color>
+</resources>
