@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--
+* DrinkToken
+*     Copyright (c) 2016 Katy Brimm
+*     This source file is licensed under the BSD 2-Clause License.
+*     Please see the file LICENSE in this distribution for license terms.
+* Contact: katy.brimm@gmail.com
+-->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.kbrimm.app.drinktoken">
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_drinktoken"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
