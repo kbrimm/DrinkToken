@@ -15,6 +15,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -31,10 +34,13 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "DrinkToken.db";
     private static final String TAG = "DrinkToken";
-    // Frequently used date query parts
-    private static final String TODAYS_DATE = "date('now', 'localtime')";
-    private static final String ONE_WEEK_AGO = "date('now', 'localtime', " +
-            "'-6 days')";
+    // Table name strings
+    public static final String META_TABLE = "meta_data";
+    public static final String LOG_TABLE = "drink_log";
+    // Column name strings
+    public static final String META_DATE_COLUMN = "created_date";
+    public static final String LOG_DATE_COLUMN = "log_date";
+    public static final String LOG_COUNT_COLUMN = "drink_count";
     private static final String COLUMN_NAME_NULLABLE = null;
     // Singleton database
     private static DrinkTokenDbHelper INSTANCE;
@@ -56,13 +62,13 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     // Sets two tables, meta_data and drink_log. Initializes created_date
     @Override
     public void onCreate(SQLiteDatabase db) {
-        String createMeta = "CREATE TABLE " + MetaContract.MetaEntry.TABLE_NAME +
-                " (" + MetaContract.MetaEntry.COLUMN_NAME_DATE + " DATE);";
-        String createCounts = "CREATE TABLE " + DrinkContract.DrinkEntry.TABLE_NAME +
-                " (" + DrinkContract.DrinkEntry.COLUMN_NAME_DATE + " DATE, " +
-                DrinkContract.DrinkEntry.COLUMN_NAME_COUNT + " INTEGER);";
-        String addCreatedDate = "INSERT INTO " + MetaContract.MetaEntry.TABLE_NAME +
-                " VALUES (" + TODAYS_DATE + ");";
+        String createMeta = "CREATE TABLE " + META_TABLE + " (" +
+                META_DATE_COLUMN + " DATE);";
+        String createCounts = "CREATE TABLE " + LOG_TABLE +
+                " (" + LOG_DATE_COLUMN + " DATE, " + LOG_COUNT_COLUMN +
+                " INTEGER);";
+        String addCreatedDate = "INSERT INTO " + META_TABLE + " VALUES (" +
+                getToday() + ");";
 
         // Create tables
         db.execSQL(createMeta);
@@ -85,21 +91,38 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     // Ensures today is in log, increments drink count
     protected void incrementCount() {
         /* INSERT INTO drink_log
-         *   VALUES ({TODAYS_DATE}, 1);
+         *   VALUES ({getToday()}, 1);
          */
-        String table = DrinkContract.DrinkEntry.TABLE_NAME;
-        String columnDate = DrinkContract.DrinkEntry.COLUMN_NAME_DATE;
-        String columnCount = DrinkContract.DrinkEntry.COLUMN_NAME_COUNT;
-        ContentValues insertValues = new ContentValues();
-        insertValues.put(columnDate, TODAYS_DATE);
-        insertValues.put(columnCount, 1);
+
+        String selectQuery = "SELECT * FROM " + LOG_TABLE + " WHERE " +
+                LOG_DATE_COLUMN + " = ?";
+        String[] selectQueryArgs = {getToday()};
+        String insertQuery = "INSERT INTO " + LOG_TABLE + " VALUES ('" +
+                getToday() + "', 1);";
+        String updateQuery = "UPDATE " + LOG_TABLE + " SET " + LOG_COUNT_COLUMN +
+                " = " + LOG_COUNT_COLUMN + " + 1 WHERE " + LOG_DATE_COLUMN +
+                " = '" + getToday() + "'";
+
         // Get database, begin transaction
         SQLiteDatabase db = getWritableDatabase();
-        // First, attempt an insert
+        Cursor cursor = db.rawQuery(selectQuery, selectQueryArgs);
+        // First, attempt a select
         try {
-            db.insertOrThrow(table, COLUMN_NAME_NULLABLE, insertValues);
+            if(cursor.getCount() > 0) {
+                // If results are returned, update
+                db.execSQL(updateQuery);
+                Log.d(TAG, "incrementCount: Updated");
+            } else {
+                // Otherwise insert
+                db.execSQL(insertQuery);
+                Log.d(TAG, "incrementCount: Inserted");
+            }
         } catch (Exception oops) {
             Log.d(TAG, "incrementCount: Unexpected error.");
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
         }
     }
 
@@ -110,24 +133,23 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
          *   FROM drink_log
          *   WHERE date = date('now', 'localtime');
          */
-        String table = DrinkContract.DrinkEntry.TABLE_NAME;
-        String columnDate = DrinkContract.DrinkEntry.COLUMN_NAME_DATE;
-        String columnCount = DrinkContract.DrinkEntry.COLUMN_NAME_COUNT;
-        String[] projection = {"SUM(" + columnCount + ")"};
-        String selection = columnDate + " = ?";
-        String[] selectionArgs = {TODAYS_DATE};
+        String[] projection = {"SUM(" + LOG_COUNT_COLUMN + ")", LOG_DATE_COLUMN};
+        String selection = LOG_DATE_COLUMN + " = ?";
+        String[] selectionArgs = {getToday()};
         String groupBy = null;
         String having = null;
         String orderBy = null;
         String limit = null;
         int result = -1;
+        String dateString = "";
         // Get database and cursor
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(table, projection, selection, selectionArgs,
+        Cursor cursor = db.query(LOG_TABLE, projection, selection, selectionArgs,
                 groupBy, having, orderBy, limit);
         try {
             if (cursor.moveToFirst()) {
                 result = cursor.getInt(0);
+                dateString = cursor.getString(1);
             } else {
                 result = 0;
             }
@@ -139,7 +161,9 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
             }
+            Log.d(TAG, "getDailyCount: Returning " + result + ", " + dateString);
         }
+
         return result;
     }
 
@@ -147,23 +171,17 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         /*
          * SELECT SUM(drink_count)
          *   FROM drink_log
-         *   WHERE date > date(julianday('now', 'localtime') - 7);
+         *   WHERE date BETWEEN oneWeekAgo() AND getToday();
          */
-        String table = DrinkContract.DrinkEntry.TABLE_NAME;
-        String columnDate = DrinkContract.DrinkEntry.COLUMN_NAME_DATE;
-        String columnCount = DrinkContract.DrinkEntry.COLUMN_NAME_COUNT;
-        String[] projection = {"SUM(" + columnCount + ")"};
-        String selection = columnDate + " BETWEEN ? AND ?";
-        String[] selectionArgs = {TODAYS_DATE, ONE_WEEK_AGO};
-        String groupBy = null;
-        String having = null;
-        String orderBy = null;
-        String limit = null;
+        String query = "SELECT SUM("+ LOG_COUNT_COLUMN + ") FROM "
+                + LOG_TABLE + " WHERE " + LOG_DATE_COLUMN + " BETWEEN ? AND ?";
+        String[] queryArgs = {getOneWeekAgo(), getToday()};
         int result = -1;
         // Get database and cursor
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(table, projection, selection, selectionArgs,
-                groupBy, having, orderBy, limit);
+        //Cursor cursor = db.query(table, projection, selection, selectionArgs,
+        //        groupBy, having, orderBy, limit);
+        Cursor cursor = db.rawQuery(query, queryArgs);
         try {
             if (cursor.moveToFirst()) {
                 do {
@@ -188,13 +206,34 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     protected double getDailyAvg() {
         int totalDrinks = getTotalDrinks();
         int totalDays = getElapsedDays();
-        return totalDrinks/totalDays;
+        double result = 1.0 * totalDrinks/totalDays;
+        Log.d(TAG, "getDailyAvg: Returning: " + result);
+        return result;
     }
 
     protected double getWeeklyAvg() {
         int totalDrinks = getTotalDrinks();
         int totalWeeks = getElapsedWeeks();
-        return totalDrinks/totalWeeks;
+        double result = 1.0 * totalDrinks/totalWeeks;
+        Log.d(TAG, "getWeeklyAvg: Returning " + result);
+        return result;
+    }
+
+    private String getToday() {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Date calDate = Calendar.getInstance().getTime();
+        String today = df.format(calDate);
+        Log.d(TAG, "getToday: " + today);
+        return today;
+    }
+
+    private String getOneWeekAgo() {
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        Date calDate = Calendar.getInstance().getTime();
+        calDate = new Date(calDate.getTime() - 6 * 24 * 3600 * 1000l);
+        String oneWeekAgo = df.format(calDate);
+        Log.d(TAG, "getOneWeekAgo: " + oneWeekAgo);
+        return oneWeekAgo;
     }
 
     private int getTotalDrinks() {
@@ -202,9 +241,9 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
          * SELECT SUM(drink_count)
          *   FROM drink_log;
          */
-        String table = DrinkContract.DrinkEntry.TABLE_NAME;
+        String table = LOG_TABLE;
         String[] projection = {"SUM(" +
-                DrinkContract.DrinkEntry.COLUMN_NAME_COUNT + ")"};
+                LOG_COUNT_COLUMN + ")"};
         String selection = null;
         String[] selectionArgs = null;
         String groupBy = null;
@@ -230,6 +269,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
             }
+            Log.d(TAG, "getTotalDrinks: Returning " + result);
         }
         return result;
     }
@@ -239,8 +279,8 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
          * SELECT 1 + CAST(strftime('%J', date('now', 'localtime')) AS INT) -
          *   (SELECT CAST(strftime('%J', created_date) AS INT) FROM meta_data);
          */
-        String table = MetaContract.MetaEntry.TABLE_NAME;
-        String[] projection = {"1 + CAST(strftime('%J', " + TODAYS_DATE +
+        String table = META_TABLE;
+        String[] projection = {"1 + CAST(strftime('%J', " + getToday() +
                 ") AS INT) - (SELECT CAST(strftime('%J', created_date) " +
                 "AS INT) FROM meta_data)"};
         String selection = null;
@@ -268,11 +308,14 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             if (cursor != null && !cursor.isClosed()) {
                 cursor.close();
             }
+            Log.d(TAG, "getElapsedDays: Returning " + result);
         }
         return result;
     }
 
     private int getElapsedWeeks() {
-        return 1+((getElapsedDays()-1)/7);
+        int result = 1+((getElapsedDays()-1)/7);
+        Log.d(TAG, "getElapsedWeeks: Returning " + result);
+        return result;
     }
 }
