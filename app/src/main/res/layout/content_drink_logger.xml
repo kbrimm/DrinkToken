@@ -10,6 +10,7 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -20,7 +21,6 @@
     <Space android:layout_height="25dp"
         android:layout_width="match_parent"/>
 
-    // Add drink button
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/beer_icon"
         android:layout_width="120dp"
@@ -30,41 +30,50 @@
         android:onClick="addDrink"
         style="?android:attr/buttonStyle"/>
 
-    <Space android:layout_height="25dp"
-        android:layout_width="match_parent"/>
+    <!-- Counts Card -->
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/counts_card"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="5dp">
 
-    <TextView android:id="@+id/daily_count"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:tint="@color/colorAccent"
-        android:text="@string/daily_count"
-        android:textAllCaps="true"
-        android:textSize="18pt"
-        android:gravity="center" />
-    <TextView android:id="@+id/weekly_count"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/weekly_count"
-        android:textAllCaps="true"
-        android:textSize="18pt"
-        android:gravity="center" />
+        <TextView android:id="@+id/count_strings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:tint="@color/colorAccent"
+            android:text="@string/count_strings"
+            android:textAllCaps="true"
+            android:textSize="18pt"
+            android:gravity="center" />
 
-    <Space android:layout_height="20dp"
-        android:layout_width="match_parent"/>
+    </android.support.v7.widget.CardView>
 
-    <TextView android:id="@+id/daily_avg"
+    <!-- Averages Card -->
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/averages_card"
+        android:layout_gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/daily_avg"
-        android:textAllCaps="true"
-        android:textSize="12pt"
-        android:gravity="center" />
-    <TextView android:id="@+id/weekly_avg"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/weekly_avg"
-        android:textAllCaps="true"
-        android:textSize="12pt"
-        android:gravity="center" />
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="5dp">
+
+        <TextView android:id="@+id/avg_strings"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:text="@string/avg_strings"
+            android:textAllCaps="true"
+            android:textSize="12pt"
+            android:gravity="center" />
+
+    </android.support.v7.widget.CardView>
 
 </LinearLayout>
