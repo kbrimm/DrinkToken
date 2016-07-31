@@ -9,9 +9,7 @@
 <resources>
     <string name="app_name">DrinkToken</string>
     <string name="action_settings">Settings</string>
-    <string name="daily_count">Today: 00</string>
-    <string name="weekly_count">This week: 00</string>
-    <string name="daily_avg">Daily average: 00</string>
-    <string name="weekly_avg">Weekly average: 00</string>
+    <string name="count_strings">Today: 00\nThis week: 00</string>
+    <string name="avg_strings">Daily average: 0.0\nWeekly average: 0.0</string>
     <string name="button_add">Drink!</string>
 </resources>
