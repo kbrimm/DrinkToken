@@ -92,17 +92,15 @@ public class DrinkToken extends AppCompatActivity {
         // Get updated strings.
         String dailyCountString = "Today: " + db.getDailyCount();
         String weeklyCountString = "This week: " + db.getWeeklyCount();
-        String dailyAvgString = "Daily average: " + db.getDailyAvg();
-        String weeklyAvgString = "Weekly average: " + db.getWeeklyAvg();
+        String dailyAvgString = "Daily average: " +
+                String.format("%.2f", db.getDailyAvg());
+        String weeklyAvgString = "Weekly average: " +
+                String.format("%.2f", db.getWeeklyAvg());
 
         // Get and set text elements
-        TextView dailyCount = (TextView) findViewById(R.id.daily_count);
-        dailyCount.setText(dailyCountString);
-        TextView weeklyCount = (TextView) findViewById(R.id.weekly_count);
-        weeklyCount.setText(weeklyCountString);
-        TextView dailyAvg = (TextView) findViewById(R.id.daily_avg);
-        dailyAvg.setText(dailyAvgString);
-        TextView weeklyAvg = (TextView) findViewById(R.id.weekly_avg);
-        weeklyAvg.setText(weeklyAvgString);
+        TextView dailyCount = (TextView) findViewById(R.id.count_strings);
+        dailyCount.setText(dailyCountString + "\n" + weeklyCountString);
+        TextView dailyAvg = (TextView) findViewById(R.id.avg_strings);
+        dailyAvg.setText(dailyAvgString + "\n" + weeklyAvgString);
     }
 }
