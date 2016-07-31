@@ -23,15 +23,17 @@ public class DrinkToken extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Very exciting setup things
+        // Very exciting view setup things
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drink_logger);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         // Get the database, initialize the counts
         final DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(this);
         setCounts(db);
-        // On click, do this stuff.
+
+        // On beer_icon click, do this stuff.
         FloatingActionButton fab = (FloatingActionButton)
                 findViewById(R.id.beer_icon);
         assert fab != null;
@@ -59,9 +61,9 @@ public class DrinkToken extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_clear: return true;
+            case R.id.action_help: return true;
         }
 
         return super.onOptionsItemSelected(item);
