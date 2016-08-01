@@ -45,7 +45,6 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     // Singleton database
     private static DrinkTokenDbHelper INSTANCE;
 
-
     // Singleton database initialized using getInstance(context)
     public static synchronized DrinkTokenDbHelper getInstance(Context context) {
         if (INSTANCE == null) {
@@ -86,6 +85,20 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     public void onDowngrade(SQLiteDatabase db, int oldVersion,
                             int newVersion) {
         // To do: Implement downgrade policy
+    }
+
+    protected void clearData() {
+        String createMeta = "DELETE FROM " + META_TABLE;
+        String createCounts = "DELETE FROM " + LOG_TABLE;
+        String addCreatedDate = "INSERT INTO " + META_TABLE + " VALUES (" +
+                getToday() + ");";
+
+        SQLiteDatabase db = getWritableDatabase();
+        // Create tables
+        db.execSQL(createMeta);
+        db.execSQL(createCounts);
+        // Store created_date in meta_data
+        db.execSQL(addCreatedDate);
     }
 
     // Ensures today is in log, increments drink count
