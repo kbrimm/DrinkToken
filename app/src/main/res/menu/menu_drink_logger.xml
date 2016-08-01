@@ -11,8 +11,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".DrinkToken">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_clear"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="@string/action_clear"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_help"
+        android:orderInCategory="1000"
+        android:title="@string/action_help"
         app:showAsAction="never" />
 </menu>

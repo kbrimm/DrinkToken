@@ -8,8 +8,11 @@
 
 package com.kbrimm.app.drinktoken;
 
+import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -23,15 +26,17 @@ public class DrinkToken extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // Very exciting setup things
+        // Very exciting view setup things
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_drink_logger);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         // Get the database, initialize the counts
         final DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(this);
         setCounts(db);
-        // On click, do this stuff.
+
+        // On beer_icon click, do this stuff.
         FloatingActionButton fab = (FloatingActionButton)
                 findViewById(R.id.beer_icon);
         assert fab != null;
@@ -59,20 +64,37 @@ public class DrinkToken extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_clear:
+                clearData();
+                return true;
+            case R.id.action_help: return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    /** Called when user clicks the Drink! button */
-    public void addDrink(DrinkTokenDbHelper db) {
+    private void addDrink(DrinkTokenDbHelper db) {
         // To do: Add drink
         incrementDrinks(db);
         // To do: Retrieve new values
         setCounts(db);
+    }
+
+    private void clearData() {
+        AlertDialog alert = new AlertDialog.Builder(this)
+                .setTitle("Clear Data")
+                .setMessage("Do you really want to clear all data? This action cannot be undone.")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+                        db.clearData();
+                        setCounts(db);
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null).show();
     }
 
     private void animateFAB() {
