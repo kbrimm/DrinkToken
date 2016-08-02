@@ -8,7 +8,6 @@
 
 package com.kbrimm.app.drinktoken;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -41,7 +40,6 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     public static final String META_DATE_COLUMN = "created_date";
     public static final String LOG_DATE_COLUMN = "log_date";
     public static final String LOG_COUNT_COLUMN = "drink_count";
-    private static final String COLUMN_NAME_NULLABLE = null;
     // Singleton database
     private static DrinkTokenDbHelper INSTANCE;
 
