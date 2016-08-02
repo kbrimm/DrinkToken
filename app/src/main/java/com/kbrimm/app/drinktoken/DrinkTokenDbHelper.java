@@ -142,15 +142,24 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
      * No values accepted or returned.
      */
     protected void incrementCount() {
-        /* INSERT INTO drink_log
-         *   VALUES ({getToday()}, 1);
+        /*
+         * SELECT * FROM drink_log
+         *   WHERE log_date = 'getToday()';
          */
-
         String selectQuery = "SELECT * FROM " + LOG_TABLE + " WHERE " +
                 LOG_DATE_COLUMN + " = ?";
         String[] selectQueryArgs = {getToday()};
+        /*
+         * INSERT INTO drink_log
+         *   VALUES ('getToday()', 1);
+         */
         String insertQuery = "INSERT INTO " + LOG_TABLE + " VALUES ('" +
                 getToday() + "', 1);";
+        /*
+         * UPDATE drink_log
+         *   SET drink_count = drink_count + 1
+         *   WHERE log_date = 'getToday()';
+         */
         String updateQuery = "UPDATE " + LOG_TABLE + " SET " + LOG_COUNT_COLUMN +
                 " = " + LOG_COUNT_COLUMN + " + 1 WHERE " + LOG_DATE_COLUMN +
                 " = '" + getToday() + "'";
@@ -163,19 +172,66 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             if(cursor.getCount() > 0) {
                 // If results are returned, update
                 db.execSQL(updateQuery);
-                Log.d(TAG, "incrementCount: Updated");
+                Log.d(TAG, "incrementCount: Updated.");
             } else {
                 // Otherwise insert
                 db.execSQL(insertQuery);
-                Log.d(TAG, "incrementCount: Inserted");
+                Log.d(TAG, "incrementCount: Inserted.");
             }
         } catch (Exception oops) {
             Log.d(TAG, "incrementCount: Unexpected error.");
         } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
+            if (cursor != null && !cursor.isClosed()) { cursor.close(); }
         }
+    }
+
+    /**
+     * Queries database, checks to see if today exists in
+     * drink_log.created_date and has a drink count of > 0.
+     * If yes, decrements today's entry for drink_count by 1.
+     *
+     * @return boolean indicating whether or not a drink was removed
+     */
+    protected boolean decrementCount() {
+        /*
+         * SELECT * FROM drink_log
+         *   WHERE log_date = 'getToday()' AND drink_count > 0;
+         */
+        String selectQuery = "SELECT * FROM " + LOG_TABLE + " WHERE " +
+                LOG_DATE_COLUMN + " = ? AND " + LOG_COUNT_COLUMN + " > 0";
+        String[] selectQueryArgs = {getToday()};
+        /*
+         * UPDATE drink_log
+         *   SET drink_count = drink_count - 1
+         *   WHERE log_date = 'getToday()';
+         */
+        String updateQuery = "UPDATE " + LOG_TABLE + " SET " + LOG_COUNT_COLUMN +
+                " = " + LOG_COUNT_COLUMN + " - 1 WHERE " + LOG_DATE_COLUMN +
+                " = '" + getToday() + "'";
+
+        // Get database, begin transaction
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery(selectQuery, selectQueryArgs);
+        boolean drinkRemoved;
+        // First, attempt a select
+        try {
+            if(cursor.getCount() > 0) {
+                // If results are returned, update
+                db.execSQL(updateQuery);
+                Log.d(TAG, "decrementCount: Decremented.");
+                drinkRemoved = true;
+            } else {
+                // Otherwise nothing happens
+                Log.d(TAG, "decrementCount: No drinks found for today.");
+                drinkRemoved = false;
+            }
+        } catch (Exception oops) {
+            Log.d(TAG, "decrementCount: Unexpected error.");
+            drinkRemoved = false;
+        } finally {
+            if (cursor != null && !cursor.isClosed()) { cursor.close(); }
+        }
+        return drinkRemoved;
     }
 
     /**
@@ -187,7 +243,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         /*
          * SELECT SUM(drink_count)
          *   FROM drink_log
-         *   WHERE date = date('now', 'localtime');
+         *   WHERE date = 'getToday()';
          */
         String[] projection = {"SUM(" + LOG_COUNT_COLUMN + ")", LOG_DATE_COLUMN};
         String selection = LOG_DATE_COLUMN + " = ?";
@@ -196,12 +252,13 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         String having = null;
         String orderBy = null;
         String limit = null;
-        int result = -1;
-        String dateString = "";
+
         // Get database and cursor
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(LOG_TABLE, projection, selection, selectionArgs,
                 groupBy, having, orderBy, limit);
+        int result = -1;
+        String dateString = "";
         try {
             if (cursor.moveToFirst()) {
                 result = cursor.getInt(0);
@@ -214,12 +271,9 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             Log.d(TAG, "getDailyCount: Unexpected error.");
             result = 0;
         } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
+            if (cursor != null && !cursor.isClosed()) { cursor.close(); }
             Log.d(TAG, "getDailyCount: Returning " + result + ", " + dateString);
         }
-
         return result;
     }
 
@@ -232,17 +286,16 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         /*
          * SELECT SUM(drink_count)
          *   FROM drink_log
-         *   WHERE date BETWEEN oneWeekAgo() AND getToday();
+         *   WHERE date BETWEEN 'oneWeekAgo()' AND 'getToday()';
          */
-        String query = "SELECT SUM("+ LOG_COUNT_COLUMN + ") FROM "
+        String query = "SELECT SUM(" + LOG_COUNT_COLUMN + ") FROM "
                 + LOG_TABLE + " WHERE " + LOG_DATE_COLUMN + " BETWEEN ? AND ?";
         String[] queryArgs = {getOneWeekAgo(), getToday()};
-        int result = -1;
+
         // Get database and cursor
         SQLiteDatabase db = this.getReadableDatabase();
-        //Cursor cursor = db.query(table, projection, selection, selectionArgs,
-        //        groupBy, having, orderBy, limit);
         Cursor cursor = db.rawQuery(query, queryArgs);
+        int result = -1;
         try {
             if (cursor.moveToFirst()) {
                 do {
@@ -256,9 +309,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             Log.d(TAG, "getWeeklyCount: Unexpected error.");
             result = 0;
         } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
+            if (cursor != null && !cursor.isClosed()) { cursor.close(); }
             Log.d(TAG, "getWeeklyCount: Returning " + result);
         }
         return result;
@@ -340,11 +391,12 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         String having = null;
         String orderBy = null;
         String limit = null;
-        int result = -1;
+
         // Get database and cursor
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(table, projection, selection, selectionArgs,
                 groupBy, having, orderBy, limit);
+        int result = -1;
         try {
             if (cursor.moveToFirst()) {
                 result = cursor.getInt(0);
@@ -356,9 +408,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             Log.d(TAG, "getTotalDrinks: Unexpected error.");
             result = 0;
         } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
+            if (cursor != null && !cursor.isClosed()) { cursor.close(); }
             Log.d(TAG, "getTotalDrinks: Returning " + result);
         }
         return result;
@@ -366,30 +416,31 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
 
     /**
      * Queries database, returns total number of days elapsed since database
-     * creation date.
+     * creation date, adds 1.
      *
      * @return integer value for total number of days since database creation
      */
     private int getElapsedDays() {
         /*
-         * SELECT 1 + CAST(strftime('%J', date('now', 'localtime')) AS INT) -
+         * SELECT 1 + CAST(strftime('%J', 'getToday()') AS INT) -
          *   (SELECT CAST(strftime('%J', created_date) AS INT) FROM meta_data);
          */
         String table = META_TABLE;
         String[] projection = {"1 + CAST(strftime('%J', '" + getToday() +
                 "') AS INT) - (SELECT CAST(strftime('%J', created_date) " +
-                "AS INT) FROM meta_data)"};
+                "AS INT) FROM " + META_TABLE + ")"};
         String selection = null;
         String[] selectionArgs = null;
         String groupBy = null;
         String having = null;
         String orderBy = null;
         String limit = null;
-        int result = -1;
+
         // Get database and cursor
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(table, projection, selection,
                 selectionArgs, groupBy, having, orderBy, limit);
+        int result = -1;
         try {
             if (cursor.moveToFirst()) {
                 result = cursor.getInt(0);
@@ -401,9 +452,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             Log.d(TAG, "getElapsedDays: Unexpected error.");
             result = 0;
         } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
+            if (cursor != null && !cursor.isClosed()) { cursor.close(); }
             Log.d(TAG, "getElapsedDays: Returning " + result);
         }
         return result;
@@ -411,9 +460,9 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
 
     /**
      * Returns total number of seven-day periods since database creation date.
-     * Calls getElapsedDays(), divides that value by 7.
+     * Calls getElapsedDays(), divides that value by 7, adds 1.
      *
-     * @return integer value for total number of days divided by 7
+     * @return integer value for total number of weeks since database creation
      */
     private int getElapsedWeeks() {
         int result = 1+((getElapsedDays()-1)/7);

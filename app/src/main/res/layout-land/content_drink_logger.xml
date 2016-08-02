@@ -33,7 +33,8 @@
             android:gravity="start|center_vertical"
             android:src="@drawable/cheers_emoji"
             app:elevation="0dp"
-            style="?android:attr/buttonStyle"/>
+            style="?android:attr/buttonStyle"
+            android:onClick="addDrink" />
     </LinearLayout>
 
     <!-- Card Containter -->

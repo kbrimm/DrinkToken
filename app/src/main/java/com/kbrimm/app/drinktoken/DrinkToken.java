@@ -35,19 +35,6 @@ public class DrinkToken extends AppCompatActivity {
         // Get the database, initialize the counts
         final DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(this);
         setCounts(db);
-
-        // On beer_icon click, do this stuff.
-        FloatingActionButton fab = (FloatingActionButton)
-                findViewById(R.id.beer_icon);
-        assert fab != null;
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addDrink(db);
-                // Whee!
-                animateFAB();
-            }
-        });
     }
 
     @Override
@@ -74,10 +61,10 @@ public class DrinkToken extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void addDrink(DrinkTokenDbHelper db) {
-        // To do: Add drink
+    public void addDrink(View view) {
+        animateFAB();
+        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
         incrementDrinks(db);
-        // To do: Retrieve new values
         setCounts(db);
     }
 
@@ -85,7 +72,7 @@ public class DrinkToken extends AppCompatActivity {
         AlertDialog alert = new AlertDialog.Builder(this)
                 .setTitle("Clear Data")
                 .setMessage("Do you really want to clear all data? This action cannot be undone.")
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(android.R.drawable.ic_menu_delete)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -125,4 +112,6 @@ public class DrinkToken extends AppCompatActivity {
         TextView dailyAvg = (TextView) findViewById(R.id.avg_strings);
         dailyAvg.setText(dailyAvgString + "\n" + weeklyAvgString);
     }
+
+
 }

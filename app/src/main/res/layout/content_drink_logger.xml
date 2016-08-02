@@ -28,7 +28,8 @@
         android:layout_gravity="center"
         android:src="@drawable/cheers_emoji"
         app:elevation="0dp"
-        style="?android:attr/buttonStyle" />
+        style="?android:attr/buttonStyle"
+        android:onClick="addDrink" />
 
     <!-- Counts Card -->
     <android.support.v7.widget.CardView
