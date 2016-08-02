@@ -8,6 +8,7 @@
 
 package com.kbrimm.app.drinktoken;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.animation.AnimationUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class DrinkToken extends AppCompatActivity {
 
@@ -35,19 +37,6 @@ public class DrinkToken extends AppCompatActivity {
         // Get the database, initialize the counts
         final DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(this);
         setCounts(db);
-
-        // On beer_icon click, do this stuff.
-        FloatingActionButton fab = (FloatingActionButton)
-                findViewById(R.id.beer_icon);
-        assert fab != null;
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                addDrink(db);
-                // Whee!
-                animateFAB();
-            }
-        });
     }
 
     @Override
@@ -74,30 +63,53 @@ public class DrinkToken extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void addDrink(DrinkTokenDbHelper db) {
-        // To do: Add drink
-        incrementDrinks(db);
-        // To do: Retrieve new values
+    public void addDrink(View view) {
+        animateDrinkButton();
+        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+        db.incrementCount();
         setCounts(db);
+    }
+
+    public void undoDrink(View view) {
+
+        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+        if(db.decrementCount())
+        {
+            animateUndoButton();
+            setCounts(db);
+        } else {
+            Context context = getApplicationContext();
+            CharSequence cannot = "Cannot undo yesterday's mistakes.";
+            int duration = Toast.LENGTH_SHORT;
+            Toast cannotMessage = Toast.makeText(context, cannot, duration);
+            cannotMessage.show();
+        }
     }
 
     private void clearData() {
         AlertDialog alert = new AlertDialog.Builder(this)
                 .setTitle("Clear Data")
                 .setMessage("Do you really want to clear all data? This action cannot be undone.")
-                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setIcon(android.R.drawable.ic_menu_delete)
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
                         db.clearData();
                         setCounts(db);
+
+                        // Confirmation toast.
+                        Context context = getApplicationContext();
+                        CharSequence clean = "You are a clean slate.";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast cleanMessage = Toast.makeText(context, clean, duration);
+                        cleanMessage.show();
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
     }
 
-    private void animateFAB() {
+    private void animateDrinkButton() {
         FloatingActionButton fab = (FloatingActionButton)
                 findViewById(R.id.beer_icon);
         assert fab != null;
@@ -106,8 +118,13 @@ public class DrinkToken extends AppCompatActivity {
         fab.startAnimation(spin);
     }
 
-    private void incrementDrinks(DrinkTokenDbHelper db) {
-        db.incrementCount();
+    private void animateUndoButton() {
+        FloatingActionButton fab = (FloatingActionButton)
+                findViewById(R.id.undo_icon);
+        assert fab != null;
+        Animation spin = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.spin);
+        fab.startAnimation(spin);
     }
 
     private void setCounts(DrinkTokenDbHelper db) {
@@ -125,4 +142,6 @@ public class DrinkToken extends AppCompatActivity {
         TextView dailyAvg = (TextView) findViewById(R.id.avg_strings);
         dailyAvg.setText(dailyAvgString + "\n" + weeklyAvgString);
     }
+
+
 }
