@@ -45,8 +45,13 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     // Singleton database
     private static DrinkTokenDbHelper INSTANCE;
 
-
-    // Singleton database initialized using getInstance(context)
+    /**
+     * Checks to see if an instance of the database already exists.
+     * If so, returns that. Else creates a new instance.
+     *
+     * @param context context from which method is called
+     * @return        the single instance of the application database
+     */
     public static synchronized DrinkTokenDbHelper getInstance(Context context) {
         if (INSTANCE == null) {
             INSTANCE = new DrinkTokenDbHelper(context.getApplicationContext());
@@ -54,12 +59,22 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return INSTANCE;
     }
 
-    // Constructor should never be called directly.
+    /**
+     * Database instantiator. Only ever called through
+     * DrinkTokenDbHelper.getInstance().
+     *
+     * @param context context from which method is called
+     */
     private DrinkTokenDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
-    // Sets two tables, meta_data and drink_log. Initializes created_date
+    /**
+     * Run only on first launch of app. Creates tables meta_data and
+     * drink_count. Inserts today's date into meta_data.created_date.
+     *
+     * @param db a writable instance of the DrinkToken database
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         String createMeta = "CREATE TABLE " + META_TABLE + " (" +
@@ -67,8 +82,8 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         String createCounts = "CREATE TABLE " + LOG_TABLE +
                 " (" + LOG_DATE_COLUMN + " DATE, " + LOG_COUNT_COLUMN +
                 " INTEGER);";
-        String addCreatedDate = "INSERT INTO " + META_TABLE + " VALUES (" +
-                getToday() + ");";
+        String addCreatedDate = "INSERT INTO " + META_TABLE + " VALUES ('" +
+                getToday() + "');";
 
         // Create tables
         db.execSQL(createMeta);
@@ -77,18 +92,57 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         db.execSQL(addCreatedDate);
     }
 
-    // Not implemented
+    /**
+     * Not implemented at this time.
+     *
+     * @param db
+     * @param oldVersion
+     * @param newVersion
+     */
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
          // To do: Implement upgrade policy
     }
 
-    // Not implemented
+    /**
+     * Not implemented at this time.
+     *
+     * @param db
+     * @param oldVersion
+     * @param newVersion
+     */
     public void onDowngrade(SQLiteDatabase db, int oldVersion,
                             int newVersion) {
         // To do: Implement downgrade policy
     }
 
-    // Ensures today is in log, increments drink count
+    /**
+     * Drops all data from application database. Repopulates
+     * meta_data.created_date with today's date.
+     *
+     * No values accepted or returned.
+     */
+    protected void clearData() {
+        String createMeta = "DELETE FROM " + META_TABLE;
+        String createCounts = "DELETE FROM " + LOG_TABLE;
+        String insertCreatedDate = "INSERT INTO " + META_TABLE + " VALUES ('" +
+                getToday() + "');";
+
+        SQLiteDatabase db = getWritableDatabase();
+        // Create tables
+        db.execSQL(createMeta);
+        db.execSQL(createCounts);
+        // Store created_date in meta_data
+        db.execSQL(insertCreatedDate);
+    }
+
+    /**
+     * Queries database, checks to see if today exists in
+     * drink_log.created_date.
+     * If not, creates today's entry with a drink_count of 1.
+     * Else increments today's entry for drink_count by 1.
+     *
+     * No values accepted or returned.
+     */
     protected void incrementCount() {
         /* INSERT INTO drink_log
          *   VALUES ({getToday()}, 1);
@@ -126,7 +180,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         }
     }
 
-    // Returns today's total drinks
+    /**
+     * Queries database, returns total drinks for today's date.
+     *
+     * @return the integer count of total drinks for today's date
+     */
     protected int getDailyCount() {
         /*
          * SELECT SUM(drink_count)
@@ -167,6 +225,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Queries database, returns total drinks for a rolling 7 day window.
+     *
+     * @return the integer count of total drinks for the last 7 days
+     */
     protected int getWeeklyCount() {
         /*
          * SELECT SUM(drink_count)
@@ -203,6 +266,12 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Returns a double value for the average number of drinks per day.
+     * Calls getTotalDrinks() and getElapsedDays(), returns the divided result.
+     *
+     * @return a double value representing the averages drinks per day
+     */
     protected double getDailyAvg() {
         int totalDrinks = getTotalDrinks();
         int totalDays = getElapsedDays();
@@ -211,6 +280,13 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Returns a double value for the average number of drinks per week.
+     * Calls getTotalDrinks() and getElapsedWeeks(), returns the divided
+     * result.
+     *
+     * @return a double value representing the averages drinks per week
+     */
     protected double getWeeklyAvg() {
         int totalDrinks = getTotalDrinks();
         int totalWeeks = getElapsedWeeks();
@@ -219,6 +295,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Gets todays date, formats appropriately for insertion into SQLite.
+     *
+     * @return today's date formatted as yyyy-MM-dd
+     */
     private String getToday() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         Date calDate = Calendar.getInstance().getTime();
@@ -227,6 +308,12 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return today;
     }
 
+    /**
+     * Gets the date for 6 days before today, formats appropriately for
+     * insertion into SQLite.
+     *
+     * @return date for 6 days ago formatted as yyyy-MM-dd
+     */
     private String getOneWeekAgo() {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         Date calDate = Calendar.getInstance().getTime();
@@ -236,6 +323,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return oneWeekAgo;
     }
 
+    /**
+     * Queries database, returns total number of drinks logged.
+     *
+     * @return integer value for total number of drinks logged
+     */
     private int getTotalDrinks() {
          /*
          * SELECT SUM(drink_count)
@@ -274,14 +366,20 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Queries database, returns total number of days elapsed since database
+     * creation date.
+     *
+     * @return integer value for total number of days since database creation
+     */
     private int getElapsedDays() {
         /*
          * SELECT 1 + CAST(strftime('%J', date('now', 'localtime')) AS INT) -
          *   (SELECT CAST(strftime('%J', created_date) AS INT) FROM meta_data);
          */
         String table = META_TABLE;
-        String[] projection = {"1 + CAST(strftime('%J', " + getToday() +
-                ") AS INT) - (SELECT CAST(strftime('%J', created_date) " +
+        String[] projection = {"1 + CAST(strftime('%J', '" + getToday() +
+                "') AS INT) - (SELECT CAST(strftime('%J', created_date) " +
                 "AS INT) FROM meta_data)"};
         String selection = null;
         String[] selectionArgs = null;
@@ -313,6 +411,12 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         return result;
     }
 
+    /**
+     * Returns total number of seven-day periods since database creation date.
+     * Calls getElapsedDays(), divides that value by 7.
+     *
+     * @return integer value for total number of days divided by 7
+     */
     private int getElapsedWeeks() {
         int result = 1+((getElapsedDays()-1)/7);
         Log.d(TAG, "getElapsedWeeks: Returning " + result);
