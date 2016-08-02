@@ -8,6 +8,7 @@
 
 package com.kbrimm.app.drinktoken;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.animation.AnimationUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class DrinkToken extends AppCompatActivity {
 
@@ -62,10 +64,26 @@ public class DrinkToken extends AppCompatActivity {
     }
 
     public void addDrink(View view) {
-        animateFAB();
+        animateDrinkButton();
         DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
-        incrementDrinks(db);
+        db.incrementCount();
         setCounts(db);
+    }
+
+    public void undoDrink(View view) {
+
+        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+        if(db.decrementCount())
+        {
+            animateUndoButton();
+            setCounts(db);
+        } else {
+            Context context = getApplicationContext();
+            CharSequence cannot = "Cannot undo yesterday's mistakes.";
+            int duration = Toast.LENGTH_SHORT;
+            Toast cannotMessage = Toast.makeText(context, cannot, duration);
+            cannotMessage.show();
+        }
     }
 
     private void clearData() {
@@ -79,12 +97,19 @@ public class DrinkToken extends AppCompatActivity {
                         DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
                         db.clearData();
                         setCounts(db);
+
+                        // Confirmation toast.
+                        Context context = getApplicationContext();
+                        CharSequence clean = "You are a clean slate.";
+                        int duration = Toast.LENGTH_SHORT;
+                        Toast cleanMessage = Toast.makeText(context, clean, duration);
+                        cleanMessage.show();
                     }
                 })
                 .setNegativeButton(android.R.string.no, null).show();
     }
 
-    private void animateFAB() {
+    private void animateDrinkButton() {
         FloatingActionButton fab = (FloatingActionButton)
                 findViewById(R.id.beer_icon);
         assert fab != null;
@@ -93,8 +118,13 @@ public class DrinkToken extends AppCompatActivity {
         fab.startAnimation(spin);
     }
 
-    private void incrementDrinks(DrinkTokenDbHelper db) {
-        db.incrementCount();
+    private void animateUndoButton() {
+        FloatingActionButton fab = (FloatingActionButton)
+                findViewById(R.id.undo_icon);
+        assert fab != null;
+        Animation spin = AnimationUtils.loadAnimation(getApplicationContext(),
+                R.anim.spin);
+        fab.startAnimation(spin);
     }
 
     private void setCounts(DrinkTokenDbHelper db) {
