@@ -3,13 +3,15 @@
  *     Copyright (c) 2016 Katy Brimm
  *     This source file is licensed under the BSD 2-Clause License.
  *     Please see the file LICENSE in this distribution for license terms.
- * Contact: katy.brimm@gmail.com
+ * Contact: info@drinktokenapp.com
  */
 
 package com.kbrimm.app.drinktoken;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -35,7 +37,7 @@ public class DrinkToken extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Get the database, initialize the counts
-        final DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(this);
+        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(this);
         setCounts(db);
     }
 
@@ -44,6 +46,13 @@ public class DrinkToken extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if present.
         getMenuInflater().inflate(R.menu.menu_drink_logger, menu);
         return true;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+        setCounts(db);
     }
 
     @Override
@@ -57,7 +66,10 @@ public class DrinkToken extends AppCompatActivity {
             case R.id.action_clear:
                 clearData();
                 return true;
-            case R.id.action_help: return true;
+            case R.id.action_report:
+                sendReport();
+                return true;
+            case R.id.action_about: return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -109,6 +121,26 @@ public class DrinkToken extends AppCompatActivity {
                 .setNegativeButton(android.R.string.no, null).show();
     }
 
+    private void sendReport() {
+        // Set bug report strings
+        String[] recipient = {"report@drinktokenapp.com"};
+        String subject = "DrinkToken Bug Report";
+        String body = "Please tell us a little bit about the bug you wish to report.\n" +
+                "What happened:\n\nWhat I expected:";
+        // Set intent values
+        Intent message = new Intent(Intent.ACTION_SEND);
+        message.setType("message/rfc822");
+        message.putExtra(Intent.EXTRA_EMAIL, recipient);
+        message.putExtra(Intent.EXTRA_SUBJECT, subject);
+        message.putExtra(Intent.EXTRA_TEXT, body);
+        // Execute intent
+        try {
+            startActivity(Intent.createChooser(message, "Choose Application to Send Report"));
+        } catch (ActivityNotFoundException nope) {
+            Toast.makeText(this, "No email client found.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void animateDrinkButton() {
         FloatingActionButton fab = (FloatingActionButton)
                 findViewById(R.id.beer_icon);
@@ -142,6 +174,4 @@ public class DrinkToken extends AppCompatActivity {
         TextView dailyAvg = (TextView) findViewById(R.id.avg_strings);
         dailyAvg.setText(dailyAvgString + "\n" + weeklyAvgString);
     }
-
-
 }
