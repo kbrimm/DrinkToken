@@ -32,7 +32,7 @@ import java.util.Date;
 public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
     public static final String DATABASE_NAME = "DrinkToken.db";
-    private static final String TAG = "DrinkToken";
+    // private static final String TAG = "DrinkToken";
     // Table name strings
     public static final String META_TABLE = "meta_data";
     public static final String LOG_TABLE = "drink_log";
@@ -172,14 +172,14 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             if(cursor.getCount() > 0) {
                 // If results are returned, update
                 db.execSQL(updateQuery);
-                Log.d(TAG, "incrementCount: Updated.");
+                // Log.d(TAG, "incrementCount: Updated.");
             } else {
                 // Otherwise insert
                 db.execSQL(insertQuery);
-                Log.d(TAG, "incrementCount: Inserted.");
+                // Log.d(TAG, "incrementCount: Inserted.");
             }
         } catch (Exception oops) {
-            Log.d(TAG, "incrementCount: Unexpected error.");
+            // Log.d(TAG, "incrementCount: Unexpected error.");
         } finally {
             if (cursor != null && !cursor.isClosed()) { cursor.close(); }
         }
@@ -218,15 +218,15 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             if(cursor.getCount() > 0) {
                 // If results are returned, update
                 db.execSQL(updateQuery);
-                Log.d(TAG, "decrementCount: Decremented.");
+                // Log.d(TAG, "decrementCount: Decremented.");
                 drinkRemoved = true;
             } else {
                 // Otherwise nothing happens
-                Log.d(TAG, "decrementCount: No drinks found for today.");
+                // Log.d(TAG, "decrementCount: No drinks found for today.");
                 drinkRemoved = false;
             }
         } catch (Exception oops) {
-            Log.d(TAG, "decrementCount: Unexpected error.");
+            // Log.d(TAG, "decrementCount: Unexpected error.");
             drinkRemoved = false;
         } finally {
             if (cursor != null && !cursor.isClosed()) { cursor.close(); }
@@ -268,11 +268,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             }
         } catch(Exception oops) {
             // To do: Handle exception
-            Log.d(TAG, "getDailyCount: Unexpected error.");
+            // Log.d(TAG, "getDailyCount: Unexpected error.");
             result = 0;
         } finally {
             if (cursor != null && !cursor.isClosed()) { cursor.close(); }
-            Log.d(TAG, "getDailyCount: Returning " + result + ", " + dateString);
+            // Log.d(TAG, "getDailyCount: Returning " + result + ", " + dateString);
         }
         return result;
     }
@@ -306,11 +306,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             }
         } catch(Exception oops) {
             // To do: Handle exception
-            Log.d(TAG, "getWeeklyCount: Unexpected error.");
+            // Log.d(TAG, "getWeeklyCount: Unexpected error.");
             result = 0;
         } finally {
             if (cursor != null && !cursor.isClosed()) { cursor.close(); }
-            Log.d(TAG, "getWeeklyCount: Returning " + result);
+            // Log.d(TAG, "getWeeklyCount: Returning " + result);
         }
         return result;
     }
@@ -325,7 +325,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         int totalDrinks = getTotalDrinks();
         int totalDays = getElapsedDays();
         double result = 1.0 * totalDrinks/totalDays;
-        Log.d(TAG, "getDailyAvg: Returning: " + result);
+        // Log.d(TAG, "getDailyAvg: Returning: " + result);
         return result;
     }
 
@@ -340,7 +340,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         int totalDrinks = getTotalDrinks();
         double totalWeeks = getElapsedWeeks();
         double result = totalDrinks/totalWeeks;
-        Log.d(TAG, "getWeeklyAvg: Returning " + result);
+        // Log.d(TAG, "getWeeklyAvg: Returning " + result);
         return result;
     }
 
@@ -353,7 +353,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         Date calDate = Calendar.getInstance().getTime();
         String today = df.format(calDate);
-        Log.d(TAG, "getToday: " + today);
+        // Log.d(TAG, "getToday: " + today);
         return today;
     }
 
@@ -368,7 +368,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
         Date calDate = Calendar.getInstance().getTime();
         calDate = new Date(calDate.getTime() - 6 * 24 * 3600 * 1000l);
         String oneWeekAgo = df.format(calDate);
-        Log.d(TAG, "getOneWeekAgo: " + oneWeekAgo);
+        // Log.d(TAG, "getOneWeekAgo: " + oneWeekAgo);
         return oneWeekAgo;
     }
 
@@ -405,11 +405,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             }
         } catch(Exception oops) {
             // To do: Handle exception
-            Log.d(TAG, "getTotalDrinks: Unexpected error.");
+            // Log.d(TAG, "getTotalDrinks: Unexpected error.");
             result = 0;
         } finally {
             if (cursor != null && !cursor.isClosed()) { cursor.close(); }
-            Log.d(TAG, "getTotalDrinks: Returning " + result);
+            // Log.d(TAG, "getTotalDrinks: Returning " + result);
         }
         return result;
     }
@@ -449,11 +449,11 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
             }
         } catch(Exception oops) {
             // To do: Handle exception
-            Log.d(TAG, "getElapsedDays: Unexpected error.");
+            // Log.d(TAG, "getElapsedDays: Unexpected error.");
             result = 0;
         } finally {
             if (cursor != null && !cursor.isClosed()) { cursor.close(); }
-            Log.d(TAG, "getElapsedDays: Returning " + result);
+            // Log.d(TAG, "getElapsedDays: Returning " + result);
         }
         return result;
     }
@@ -466,7 +466,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
      */
     private double getElapsedWeeks() {
         double result = ((getElapsedDays()-1.00)/7.00);
-        Log.d(TAG, "getElapsedWeeks: Returning " + result);
+        // Log.d(TAG, "getElapsedWeeks: Returning " + result);
         return result;
     }
 }

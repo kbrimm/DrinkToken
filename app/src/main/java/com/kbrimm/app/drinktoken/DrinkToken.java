@@ -28,7 +28,7 @@ import android.widget.Toast;
 
 public class DrinkToken extends AppCompatActivity {
     private static final String APP_VERSION = "1.0";
-    private static final String TAG = "DrinkToken";
+    // private static final String TAG = "DrinkToken";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
