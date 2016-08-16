@@ -466,6 +466,9 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
      */
     private double getElapsedWeeks() {
         double result = ((getElapsedDays()-1.00)/7.00);
+        if (result < 1) {
+            result = 1;
+        }
         // Log.d(TAG, "getElapsedWeeks: Returning " + result);
         return result;
     }

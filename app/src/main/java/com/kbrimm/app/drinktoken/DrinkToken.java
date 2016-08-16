@@ -169,7 +169,7 @@ public class DrinkToken extends AppCompatActivity {
         // Build text view
         TextView license = new TextView(this);
         license.setText(licenseText);
-        license.setPadding(75, 45, 75, 25);
+        license.setPadding(75, 25, 75, 15);
         license.setGravity(Gravity.FILL_HORIZONTAL);
         // Create dialogue
         AlertDialog alert = new AlertDialog.Builder(this)
