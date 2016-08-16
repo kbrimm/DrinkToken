@@ -3,7 +3,7 @@
  *     Copyright (c) 2016 Katy Brimm
  *     This source file is licensed under the BSD 2-Clause License.
  *     Please see the file LICENSE in this distribution for license terms.
- * Contact: katy.brimm@gmail.com
+ * Contact: info@drinktokenapp.com
  */
 
 package com.kbrimm.app.drinktoken;
@@ -338,8 +338,8 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
      */
     protected double getWeeklyAvg() {
         int totalDrinks = getTotalDrinks();
-        int totalWeeks = getElapsedWeeks();
-        double result = 1.0 * totalDrinks/totalWeeks;
+        double totalWeeks = getElapsedWeeks();
+        double result = totalDrinks/totalWeeks;
         Log.d(TAG, "getWeeklyAvg: Returning " + result);
         return result;
     }
@@ -464,8 +464,8 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
      *
      * @return integer value for total number of weeks since database creation
      */
-    private int getElapsedWeeks() {
-        int result = 1+((getElapsedDays()-1)/7);
+    private double getElapsedWeeks() {
+        double result = ((getElapsedDays()-1.00)/7.00);
         Log.d(TAG, "getElapsedWeeks: Returning " + result);
         return result;
     }
