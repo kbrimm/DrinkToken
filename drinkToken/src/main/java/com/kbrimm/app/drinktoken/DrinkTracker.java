@@ -26,9 +26,9 @@ import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class DrinkToken extends AppCompatActivity {
+public class DrinkTracker extends AppCompatActivity {
     private static final String APP_VERSION = "1.0";
-    // private static final String TAG = "DrinkToken";
+    // private static final String TAG = "DrinkTracker";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,7 @@ public class DrinkToken extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // Get the database, initialize the counts
-        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(this);
+        DbHelper db = DbHelper.getInstance(this);
         setCounts(db);
     }
 
@@ -53,7 +53,7 @@ public class DrinkToken extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+        DbHelper db = DbHelper.getInstance(getApplicationContext());
         setCounts(db);
     }
 
@@ -78,7 +78,7 @@ public class DrinkToken extends AppCompatActivity {
     }
 
     public void addDrink(View view) {
-        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+        DbHelper db = DbHelper.getInstance(getApplicationContext());
         db.incrementCount();
         setCounts(db);
         // Whee!
@@ -87,7 +87,7 @@ public class DrinkToken extends AppCompatActivity {
 
     public void undoDrink(View view) {
         // Grab the Db
-        DrinkTokenDbHelper db = DrinkTokenDbHelper.getInstance(getApplicationContext());
+        DbHelper db = DbHelper.getInstance(getApplicationContext());
         // Try the decrement
         if(db.decrementCount())
         {
@@ -114,8 +114,8 @@ public class DrinkToken extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // Get the Db
-                        DrinkTokenDbHelper db =
-                                DrinkTokenDbHelper.getInstance(getApplicationContext());
+                        DbHelper db =
+                                DbHelper.getInstance(getApplicationContext());
                         // Clear the data
                         db.clearData();
                         // Reset the counts
@@ -133,7 +133,7 @@ public class DrinkToken extends AppCompatActivity {
     private void sendReport() {
         // Set bug report strings
         String[] recipient = {"info@drinktokenapp.com"};
-        String subject = "DrinkToken Bug Report";
+        String subject = "DrinkTracker Bug Report";
         String body = "Please tell us a little bit about the bug you wish to "+
                 "report.\n\nWhat happened:\n\nWhat I expected:";
         // Set intent values
@@ -162,10 +162,10 @@ public class DrinkToken extends AppCompatActivity {
                 "express or implied warranties, including, without " +
                 "limitation, the implied warranties of merchantability " +
                 "and fitness for a particular purpose.\n\nThe source code " +
-                "for DrinkToken is available as an open source project, " +
+                "for DrinkTracker is available as an open source project, " +
                 "and is licensed under the BSD 2-clause license. The source " +
                 "is available in its entirety on GitHub:\n\n" +
-                "http://github.com/kbrimm/DrinkToken";
+                "http://github.com/kbrimm/DrinkTracker";
         // Build text view
         TextView license = new TextView(this);
         license.setText(licenseText);
@@ -196,7 +196,7 @@ public class DrinkToken extends AppCompatActivity {
         fab.startAnimation(spin);
     }
 
-    private void setCounts(DrinkTokenDbHelper db) {
+    private void setCounts(DbHelper db) {
         // Get updated strings.
         String dailyCountString = "Today: " + db.getDailyCount();
         String weeklyCountString = "This week: " + db.getWeeklyCount();

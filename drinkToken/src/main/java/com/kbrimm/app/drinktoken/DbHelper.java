@@ -28,10 +28,10 @@ import java.util.Date;
  * Author: K Brimm
  * Date: 7/24/16
  */
-public class DrinkTokenDbHelper extends SQLiteOpenHelper {
+public class DbHelper extends SQLiteOpenHelper {
     public static final int DATABASE_VERSION = 1;
-    public static final String DATABASE_NAME = "DrinkToken.db";
-    // private static final String TAG = "DrinkToken";
+    public static final String DATABASE_NAME = "DrinkTracker.db";
+    // private static final String TAG = "DrinkTracker";
     // Table name strings
     public static final String META_TABLE = "meta_data";
     public static final String LOG_TABLE = "drink_log";
@@ -40,7 +40,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
     public static final String LOG_DATE_COLUMN = "log_date";
     public static final String LOG_COUNT_COLUMN = "drink_count";
     // Singleton database
-    private static DrinkTokenDbHelper INSTANCE;
+    private static DbHelper INSTANCE;
 
     /**
      * Checks to see if an instance of the database already exists.
@@ -49,20 +49,20 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
      * @param context context from which method is called
      * @return        the single instance of the application database
      */
-    public static synchronized DrinkTokenDbHelper getInstance(Context context) {
+    public static synchronized DbHelper getInstance(Context context) {
         if (INSTANCE == null) {
-            INSTANCE = new DrinkTokenDbHelper(context.getApplicationContext());
+            INSTANCE = new DbHelper(context.getApplicationContext());
         }
         return INSTANCE;
     }
 
     /**
      * Database instantiator. Only ever called through
-     * DrinkTokenDbHelper.getInstance().
+     * DbHelper.getInstance().
      *
      * @param context context from which method is called
      */
-    private DrinkTokenDbHelper(Context context) {
+    private DbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -70,7 +70,7 @@ public class DrinkTokenDbHelper extends SQLiteOpenHelper {
      * Run only on first launch of app. Creates tables meta_data and
      * drink_count. Inserts today's date into meta_data.created_date.
      *
-     * @param db a writable instance of the DrinkToken database
+     * @param db a writable instance of the DrinkTracker database
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
